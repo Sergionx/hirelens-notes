@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { queries } from "@/lib/query-keys"
 
-import { getCurrentUserFn, logoutFn } from "./server"
+import { getCurrentUserFn, logoutFn } from "./auth"
 
 interface User {
   username: string

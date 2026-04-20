@@ -24,7 +24,19 @@ function getBaseUrl() {
   return ""
 }
 
-export async function apiFetch(path: string, options: FetchOptions = {}) {
+export type ResponseData<T> =
+  | { success: true; message: string; data: T; error?: never }
+  | {
+      success: false
+      message: string
+      error: { statusCode: number }
+      data?: never
+    }
+
+export async function apiFetch<T>(
+  path: string,
+  options: FetchOptions = {}
+): Promise<ResponseData<T>> {
   const base = getBaseUrl()
   const url = base
     ? `${base.replace(/\/$/, "")}/${path.replace(/^\//, "")}`
@@ -48,5 +60,29 @@ export async function apiFetch(path: string, options: FetchOptions = {}) {
   if (options.mode) init.mode = options.mode
   if (options.cache) init.cache = options.cache
 
-  return fetch(url, init)
+  try {
+    const response = await fetch(url, init)
+    const result = await response.json()
+    const message = result.message || (response.ok ? "Success" : "Error")
+
+    if (!response.ok) {
+      return {
+        success: false,
+        message,
+        error: {
+          statusCode: response.status,
+        },
+      }
+    }
+
+    return { success: true, data: result.data as T, message }
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Network error",
+      error: {
+        statusCode: 500,
+      },
+    }
+  }
 }

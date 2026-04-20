@@ -1,12 +1,18 @@
-import { Outlet, HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router"
+import {
+  Outlet,
+  HeadContent,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import appCss from "../styles.css?url"
+import { Toaster } from "@ui/sonner"
 
 type RouterContext = {
-    queryClient: QueryClient
+  queryClient: QueryClient
 }
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -34,15 +40,21 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 
 export function RootComponent() {
-    const { queryClient } = Route.useRouteContext()
-    return (
-        <RootDocument queryClient={queryClient}>
-            <Outlet />
-        </RootDocument>
-    )
+  const { queryClient } = Route.useRouteContext()
+  return (
+    <RootDocument queryClient={queryClient}>
+      <Outlet />
+    </RootDocument>
+  )
 }
 
-function RootDocument({ children, queryClient }: { children: React.ReactNode, queryClient: QueryClient }) {
+function RootDocument({
+  children,
+  queryClient,
+}: {
+  children: React.ReactNode
+  queryClient: QueryClient
+}) {
   return (
     <html lang="en">
       <head>
@@ -63,6 +75,8 @@ function RootDocument({ children, queryClient }: { children: React.ReactNode, qu
             },
           ]}
         />
+        <Toaster />
+
         <Scripts />
       </body>
     </html>

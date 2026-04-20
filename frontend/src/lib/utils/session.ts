@@ -1,21 +1,23 @@
-import { useSession } from '@tanstack/react-start/server'
+import { useSession, type SessionConfig } from "@tanstack/react-start/server"
 
-type SessionData = {
+export type SessionData = {
   token?: string
   username?: string
   userId?: number
 }
 
+export const sessionConfig: SessionConfig = {
+  name: "app-session",
+  password:
+    process.env.SESSION_SECRET ||
+    "fallback-secret-for-development-only-at-least-32-chars", // At least 32 characters
+  cookie: {
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    httpOnly: true,
+  },
+}
+
 export function useAppSession() {
-  return useSession<SessionData>({
-    // Session configuration
-    name: 'app-session',
-    password: process.env.SESSION_SECRET || 'fallback-secret-for-development-only-at-least-32-chars', // At least 32 characters
-    // Optional: customize cookie settings
-    cookie: {
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      httpOnly: true,
-    },
-  })
+  return useSession<SessionData>(sessionConfig)
 }
