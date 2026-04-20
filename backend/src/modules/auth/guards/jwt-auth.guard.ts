@@ -1,10 +1,11 @@
-import { Injectable,  UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 
+import { JWTMessages } from '../auth.constants';
 
 export interface AuthenticatedUser {
   userId: number;
-  username: string;
+  nickname: string;
   email: string;
 }
 
@@ -14,11 +15,9 @@ export interface RequestWithUser extends Request {
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-
-
-   handleRequest<TUser = AuthenticatedUser>(err: any, user: TUser): TUser {
+  handleRequest<TUser = AuthenticatedUser>(err: any, user: TUser): TUser {
     if (err || !user)
-      throw err || new UnauthorizedException(AuthMessages.Errors.Unauthorized);
+      throw err || new UnauthorizedException(JWTMessages.Errors.Unauthorized);
 
     return user;
   }
