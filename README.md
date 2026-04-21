@@ -37,6 +37,7 @@ A full stack note-taking application addressing Phase 1 and 2 of the Hirelens Ch
 2. Access the Applications:
    - **Frontend UI**: http://localhost:3000
    - **Backend API**: http://localhost:3001
+   - **Deploy URL**: https://hirelens-notes.vercel.app
 
 ## Default Credentials
 When the backend connects to the database, it seamlessly generates a default user in development:
