@@ -17,6 +17,12 @@ export default defineConfig({
   user: process.env.SQL_USER || 'postgres',
   password: process.env.SQL_PASSWORD || 'password',
   dbName: process.env.SQL_DB || 'hirelens_notes',
+  driverOptions:
+    process.env.NODE_ENV === 'production'
+      ? {
+          connection: { ssl: true },
+        }
+      : undefined,
 
   metadataProvider: TsMorphMetadataProvider,
 
