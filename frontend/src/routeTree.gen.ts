@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProtectedNotesIndexRouteImport } from './routes/_protected/notes/index'
+import { Route as ProtectedNotesArchivedRouteImport } from './routes/_protected/notes/archived'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -23,38 +26,67 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
+  id: '/_protected',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ProtectedNotesIndexRoute = ProtectedNotesIndexRouteImport.update({
+  id: '/notes/',
+  path: '/notes/',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedNotesArchivedRoute = ProtectedNotesArchivedRouteImport.update({
+  id: '/notes/archived',
+  path: '/notes/archived',
+  getParentRoute: () => ProtectedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/notes/archived': typeof ProtectedNotesArchivedRoute
+  '/notes/': typeof ProtectedNotesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/notes/archived': typeof ProtectedNotesArchivedRoute
+  '/notes': typeof ProtectedNotesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_protected': typeof ProtectedRouteRouteWithChildren
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
+  '/_protected/notes/archived': typeof ProtectedNotesArchivedRoute
+  '/_protected/notes/': typeof ProtectedNotesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/signup'
+  fullPaths: '/' | '/login' | '/signup' | '/notes/archived' | '/notes/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/signup'
-  id: '__root__' | '/' | '/login' | '/signup'
+  to: '/' | '/login' | '/signup' | '/notes/archived' | '/notes'
+  id:
+    | '__root__'
+    | '/'
+    | '/_protected'
+    | '/login'
+    | '/signup'
+    | '/_protected/notes/archived'
+    | '/_protected/notes/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
 }
@@ -75,6 +107,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_protected': {
+      id: '/_protected'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ProtectedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -82,11 +121,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_protected/notes/': {
+      id: '/_protected/notes/'
+      path: '/notes'
+      fullPath: '/notes/'
+      preLoaderRoute: typeof ProtectedNotesIndexRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/notes/archived': {
+      id: '/_protected/notes/archived'
+      path: '/notes/archived'
+      fullPath: '/notes/archived'
+      preLoaderRoute: typeof ProtectedNotesArchivedRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
   }
 }
 
+interface ProtectedRouteRouteChildren {
+  ProtectedNotesArchivedRoute: typeof ProtectedNotesArchivedRoute
+  ProtectedNotesIndexRoute: typeof ProtectedNotesIndexRoute
+}
+
+const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
+  ProtectedNotesArchivedRoute: ProtectedNotesArchivedRoute,
+  ProtectedNotesIndexRoute: ProtectedNotesIndexRoute,
+}
+
+const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
+  ProtectedRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
 }

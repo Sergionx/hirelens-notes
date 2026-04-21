@@ -1,19 +1,17 @@
-import * as React from "react"
-import { useServerFn } from "@tanstack/react-start"
 import { useForm } from "@tanstack/react-form"
-import { Link } from "@tanstack/react-router"
+import { Link, isRedirect } from "@tanstack/react-router"
+import { toast } from "sonner"
+
+import { useLoginMutation } from "@/features/auth/mutations/login-mutation"
 
 import { defaultLoginValues, loginSchema } from "./schema"
-
-import { loginFn } from "@/api/auth"
 
 import { Button } from "@ui/button"
 import { Input } from "@ui/input"
 import { Field, FieldLabel, FieldError, FieldGroup } from "@ui/field"
 
 export function LoginForm() {
-  const [serverError, setServerError] = React.useState("")
-  const loginMutation = useServerFn(loginFn)
+  const loginMutation = useLoginMutation()
 
   const form = useForm({
     defaultValues: defaultLoginValues,
@@ -21,15 +19,15 @@ export function LoginForm() {
       onSubmit: loginSchema,
     },
     onSubmit: async ({ value }) => {
-      setServerError("")
       try {
-        const res = await loginMutation({ data: value })
-        if (res?.error) {
-          setServerError(res.error)
-        }
+        await loginMutation.mutateAsync(value)
+        toast.success("Signed in successfully")
         // Redirect is handled in server function via redirect()
       } catch (err) {
-        setServerError((err as Error).message)
+        if (isRedirect(err)) {
+          throw err
+        }
+        toast.error((err as Error).message)
       }
     },
   })
@@ -38,10 +36,6 @@ export function LoginForm() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
         <h2 className="mb-6 text-center text-2xl font-bold">Login</h2>
-
-        {serverError && (
-          <div className="mb-4 text-sm text-red-500">{serverError}</div>
-        )}
 
         <form
           onSubmit={(e) => {
@@ -70,11 +64,7 @@ export function LoginForm() {
                       autoComplete="email"
                     />
                     {isInvalid && (
-                      <FieldError
-                        errors={field.state.meta.errors.map((error) => ({
-                          message: error?.toString(),
-                        }))}
-                      />
+                      <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
                 )
@@ -101,18 +91,13 @@ export function LoginForm() {
                       autoComplete="current-password"
                     />
                     {isInvalid && (
-                      <FieldError
-                        errors={field.state.meta.errors.map((error) => ({
-                          message: error?.toString(),
-                        }))}
-                      />
+                      <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
                 )
               }}
             />
 
-          
             <form.Field
               name="rememberMe"
               children={(field) => (
@@ -127,7 +112,7 @@ export function LoginForm() {
                   />
                   <label
                     htmlFor={field.name}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
                     Remember me
                   </label>

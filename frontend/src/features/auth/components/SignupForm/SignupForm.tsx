@@ -1,18 +1,17 @@
-import * as React from "react"
-import { useServerFn } from "@tanstack/react-start"
 import { useForm } from "@tanstack/react-form"
-import { Link } from "@tanstack/react-router"
+import { Link, isRedirect } from "@tanstack/react-router"
+import { toast } from "sonner"
+
+import { useSignupMutation } from "@/features/auth/mutations/signup-mutation"
 
 import { defaultSignupValues, signupSchema } from "./schema"
-import { signupFn } from "@/api/auth"
 
 import { Button } from "@ui/button"
 import { Input } from "@ui/input"
 import { Field, FieldLabel, FieldError, FieldGroup } from "@ui/field"
 
 export function SignupForm() {
-  const [serverError, setServerError] = React.useState("")
-  const signupMutation = useServerFn(signupFn)
+  const signupMutation = useSignupMutation()
 
   const form = useForm({
     defaultValues: defaultSignupValues,
@@ -20,14 +19,14 @@ export function SignupForm() {
       onSubmit: signupSchema,
     },
     onSubmit: async ({ value }) => {
-      setServerError("")
       try {
-        const res = await signupMutation({ data: value })
-        if (res?.error) {
-          setServerError(res.error)
-        }
+        await signupMutation.mutateAsync(value)
+        toast.success("Account created successfully")
       } catch (err) {
-        setServerError((err as Error).message)
+        if (isRedirect(err)) {
+          throw err
+        }
+        toast.error((err as Error).message)
       }
     },
   })
@@ -36,10 +35,6 @@ export function SignupForm() {
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-md">
         <h2 className="mb-6 text-center text-2xl font-bold">Create Account</h2>
-
-        {serverError && (
-          <div className="mb-4 text-sm text-red-500">{serverError}</div>
-        )}
 
         <form
           onSubmit={(e) => {
@@ -67,11 +62,7 @@ export function SignupForm() {
                       placeholder="Username"
                     />
                     {isInvalid && (
-                      <FieldError
-                        errors={field.state.meta.errors.map((error) => ({
-                          message: error?.toString(),
-                        }))}
-                      />
+                      <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
                 )
@@ -98,11 +89,7 @@ export function SignupForm() {
                       autoComplete="email"
                     />
                     {isInvalid && (
-                      <FieldError
-                        errors={field.state.meta.errors.map((error) => ({
-                          message: error?.toString(),
-                        }))}
-                      />
+                      <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
                 )
@@ -129,11 +116,7 @@ export function SignupForm() {
                       autoComplete="new-password"
                     />
                     {isInvalid && (
-                      <FieldError
-                        errors={field.state.meta.errors.map((error) => ({
-                          message: error?.toString(),
-                        }))}
-                      />
+                      <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
                 )
@@ -147,7 +130,9 @@ export function SignupForm() {
                   field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Confirm Password</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>
+                      Confirm Password
+                    </FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -160,11 +145,7 @@ export function SignupForm() {
                       autoComplete="new-password"
                     />
                     {isInvalid && (
-                      <FieldError
-                        errors={field.state.meta.errors.map((error) => ({
-                          message: error?.toString(),
-                        }))}
-                      />
+                      <FieldError errors={field.state.meta.errors} />
                     )}
                   </Field>
                 )

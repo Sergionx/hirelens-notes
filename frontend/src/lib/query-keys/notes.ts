@@ -1,9 +1,12 @@
 import { createQueryKeys } from "@lukemorales/query-key-factory"
 
+import type { NotesQuerySchema } from "@/features/notes/schema"
+
 export const notesKeys = createQueryKeys("notes", {
-  all: null,
-  archived: null,
-  detail: (id: string) => ({
+  list: (filters: NotesQuerySchema) => ({
+    queryKey: [filters],
+  }),
+  detail: (id: number) => ({
     queryKey: [id],
   }),
 })

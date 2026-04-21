@@ -2,9 +2,33 @@
 // Uses Vite `import.meta.env` for base URL configuration. On the server
 // side (server functions) `process.env.API_BASE_URL` will be used as fallback.
 
-type FetchOptions = Omit<RequestInit, "body" | "headers"> & {
+import { useAppSession } from "@/lib/utils/session"
+
+type FetchOptions = Omit<RequestInit, "body" | "headers" | "method"> & {
   body?: any
   headers?: Record<string, string>
+  method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
+}
+
+export async function getAuthHeaders() {
+  const session = await useAppSession()
+  if (!session.data.token) throw new Error("Unauthorized")
+
+  return { Authorization: `Bearer ${session.data.token}` }
+}
+
+export async function authenticatedFetch<T>(
+  path: string,
+  options: FetchOptions = {}
+): Promise<ResponseData<T>> {
+  const authHeaders = await getAuthHeaders()
+  return apiFetch<T>(path, {
+    ...options,
+    headers: {
+      ...authHeaders,
+      ...(options.headers || {}),
+    },
+  })
 }
 
 function getBaseUrl() {

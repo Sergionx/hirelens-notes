@@ -1,9 +1,8 @@
 import { useSession, type SessionConfig } from "@tanstack/react-start/server"
 
 export type SessionData = {
-  token?: string
-  username?: string
-  userId?: number
+  token: string
+  userId: number
 }
 
 export const sessionConfig: SessionConfig = {

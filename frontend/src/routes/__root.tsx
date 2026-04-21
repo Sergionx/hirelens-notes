@@ -4,12 +4,18 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router"
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
-import { TanStackDevtools } from "@tanstack/react-devtools"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
-import appCss from "../styles.css?url"
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
+import { TanStackDevtools } from "@tanstack/react-devtools"
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools"
+import { formDevtoolsPlugin } from "@tanstack/react-form-devtools"
+
+import { AuthProvider } from "@/features/auth/contexts/AuthContext"
+
 import { Toaster } from "@ui/sonner"
+
+import appCss from "../styles.css?url"
 
 type RouterContext = {
   queryClient: QueryClient
@@ -43,7 +49,9 @@ export function RootComponent() {
   const { queryClient } = Route.useRouteContext()
   return (
     <RootDocument queryClient={queryClient}>
-      <Outlet />
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
     </RootDocument>
   )
 }
@@ -63,19 +71,24 @@ function RootDocument({
       <body>
         <QueryClientProvider client={queryClient}>
           {children}
+          <TanStackDevtools
+            config={{
+              position: "bottom-right",
+            }}
+            plugins={[
+              {
+                name: "Tanstack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+              {
+                name: "Tanstack Query",
+                render: <ReactQueryDevtoolsPanel />,
+              },
+              formDevtoolsPlugin(),
+            ]}
+          />
         </QueryClientProvider>
-        <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-          ]}
-        />
-        <Toaster />
+        <Toaster richColors />
 
         <Scripts />
       </body>

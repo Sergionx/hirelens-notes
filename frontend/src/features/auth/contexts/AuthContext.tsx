@@ -1,15 +1,12 @@
 import * as React from "react"
-import { useServerFn } from "@tanstack/react-start"
 import { useQuery } from "@tanstack/react-query"
+import { isRedirect } from "@tanstack/react-router"
+import { toast } from "sonner"
 
-import { queries } from "@/lib/query-keys"
+import { userQueryOptions } from "@/features/auth/queries/user-query"
+import { useLogoutMutation } from "@/features/auth/mutations/logout-mutation"
 
-import { getCurrentUserFn, logoutFn } from "./auth"
-
-interface User {
-  username: string
-  userId: number
-}
+import type { User } from "../schemas/user-schema"
 
 interface AuthContextType {
   isAuthenticated: boolean
@@ -21,15 +18,17 @@ interface AuthContextType {
 export const AuthContext = React.createContext<AuthContextType | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const currentUserQuery = useServerFn(getCurrentUserFn)
-  const { data: user, isLoading } = useQuery({
-    queryKey: queries.auth.me.queryKey,
-    queryFn: () => currentUserQuery(),
-  })
-  const logoutMutation = useServerFn(logoutFn)
+  const { data: user, isLoading } = useQuery(userQueryOptions)
+  const logoutMutation = useLogoutMutation()
 
   const logout = React.useCallback(async () => {
-    await logoutMutation()
+    try {
+      await logoutMutation.mutateAsync()
+    } catch (err) {
+      if (isRedirect(err)) throw err
+
+      toast.error((err as Error).message)
+    }
   }, [logoutMutation])
 
   const value = React.useMemo(

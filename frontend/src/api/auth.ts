@@ -4,7 +4,7 @@ import { redirect } from "@tanstack/react-router"
 import { jwtDecode } from "jwt-decode"
 
 import { sessionConfig, useAppSession, type SessionData } from "@utils/session"
-import { apiFetch } from "@/lib/config/fetch"
+import { apiFetch, authenticatedFetch } from "@/lib/config/fetch"
 
 import {
   loginSchema,
@@ -14,6 +14,8 @@ import {
   signupSchema,
   type SignupSchema,
 } from "@/features/auth/components/SignupForm/schema"
+
+import type { User } from "@/features/auth/schemas/user-schema"
 
 export const loginFn = createServerFn({ method: "POST" })
   .inputValidator((data: LoginSchema) => loginSchema.parse(data))
@@ -26,8 +28,6 @@ export const loginFn = createServerFn({ method: "POST" })
       },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 5000))
-
     if (!result.success) return { error: result.message }
 
     const token = result.data.access_token
@@ -39,7 +39,7 @@ export const loginFn = createServerFn({ method: "POST" })
       token
     )
 
-    updateSession<SessionData>(
+    await updateSession<SessionData>(
       {
         ...sessionConfig,
         maxAge: data.rememberMe ? 30 * 24 * 60 * 60 : undefined, // 30 days vs session
@@ -47,12 +47,11 @@ export const loginFn = createServerFn({ method: "POST" })
       {
         token,
         userId: decoded.sub,
-        username: decoded.username,
       }
     )
 
     // Redirect to protected area
-    throw redirect({ to: "/" })
+    throw redirect({ to: "/notes" })
   })
 
 export const signupFn = createServerFn({ method: "POST" })
@@ -81,7 +80,6 @@ export const signupFn = createServerFn({ method: "POST" })
     await session.update({
       token,
       userId: decoded.sub,
-      username: decoded.username,
     })
 
     throw redirect({ to: "/" })
@@ -97,24 +95,19 @@ export const getCurrentUserFn = createServerFn({ method: "GET" }).handler(
   async () => {
     const session = await useAppSession()
 
-    if (!session.data.token || !session.data.userId || !session.data.username) {
+    if (!session.data.token || !session.data.userId) {
       return null
     }
 
-    try {
-      const decoded = jwtDecode<{ exp: number }>(session.data.token)
-      if (decoded.exp * 1000 < Date.now()) {
-        await session.clear()
-        return null
-      }
-    } catch {
+    const result = await authenticatedFetch<User>("/auth/current-user", {
+      method: "GET",
+    })
+
+    if (!result.success) {
+      await session.clear()
       return null
     }
 
-    return {
-      userId: session.data.userId,
-      username: session.data.username,
-      token: session.data.token,
-    }
+    return result.data
   }
 )
