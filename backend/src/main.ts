@@ -10,8 +10,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ZodValidationPipe());
 
   const config = new DocumentBuilder()
-    .setTitle('Atletia API')
-    .setDescription('The Atletia API description')
+    .setTitle('Hirelens note API')
+    .setDescription('The Hirelens note API description')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

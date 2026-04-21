@@ -1,3 +1,4 @@
+import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 export function createMessageResponse<T extends z.ZodTypeAny>(
@@ -10,4 +11,9 @@ export function createMessageResponse<T extends z.ZodTypeAny>(
   });
 }
 
-
+export class NullResponseDto extends createZodDto(
+  z.object({
+    message: z.string(),
+    data: z.null(),
+  }),
+) {}

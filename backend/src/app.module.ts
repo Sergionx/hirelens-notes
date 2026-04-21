@@ -12,6 +12,8 @@ import { AppService } from './app.service';
 import { HttpExceptionFilter } from './http-exception.filter';
 
 import { AuthModule } from './modules/auth/auth.module';
+import { NotesModule } from './modules/notes/notes.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { AuthModule } from './modules/auth/auth.module';
     ]),
     MikroOrmModule.forRoot(mikroOrmConfig),
     AuthModule,
+    NotesModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [
