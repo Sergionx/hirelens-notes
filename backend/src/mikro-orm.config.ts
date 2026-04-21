@@ -20,7 +20,7 @@ export default defineConfig({
   driverOptions:
     process.env.NODE_ENV === 'production'
       ? {
-          connection: { ssl: true },
+          ssl: true,
         }
       : undefined,
 
