@@ -17,3 +17,10 @@ export const JWTMessages = {
     Unauthorized: 'Unauthorized access',
   },
 };
+
+export const FindUserMessages = {
+  Errors: {
+    UserNotFound: (id: number) => `User with ID ${id} not found`,
+  },
+  Success: 'User found successfully',
+};

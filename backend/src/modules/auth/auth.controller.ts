@@ -1,15 +1,28 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiConflictResponse } from '@nestjs/swagger';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiConflictResponse,
+  ApiBearerAuth,
+  ApiNotFoundResponse,
+} from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { Throttle } from '@nestjs/throttler';
 
 import { LoginService } from './services/login.service';
 import { RegisterService } from './services/register.service';
-import { LoginMessages, RegisterMessages } from './auth.constants';
+import { FindUserService } from './services/find-user.service';
+import {
+  FindUserMessages,
+  LoginMessages,
+  RegisterMessages,
+} from './auth.constants';
 
 import { LoginDto, RegisterDto } from './dto/auth.dto';
 import { User_MessageDto } from './dto/user-response.dto';
 import { AcessToken_MessageDto } from './dto/login-response.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { LoggedUser } from './decorators/authenticated-user.decorator';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -17,6 +30,7 @@ export class AuthController {
   constructor(
     private readonly loginService: LoginService,
     private readonly registerService: RegisterService,
+    private readonly findUserService: FindUserService,
   ) {}
   @Throttle({ default: { ttl: 3000, limit: 100 } })
   @Post('login')
@@ -46,6 +60,24 @@ export class AuthController {
     const user = await this.registerService.register(registerDto);
     return {
       message: RegisterMessages.Success,
+      data: user,
+    };
+  }
+
+  @Get('current-user')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get current user' })
+  @ZodResponse({
+    description: FindUserMessages.Success,
+    type: User_MessageDto,
+  })
+  @ApiNotFoundResponse({ description: FindUserMessages.Errors.UserNotFound(0) })
+  async getCurrentUser(@LoggedUser('userId') userId: number) {
+    const user = await this.findUserService.findById(userId);
+    
+    return {
+      message: FindUserMessages.Success,
       data: user,
     };
   }
