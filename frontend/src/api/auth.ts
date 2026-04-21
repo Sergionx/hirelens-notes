@@ -49,9 +49,6 @@ export const loginFn = createServerFn({ method: "POST" })
         userId: decoded.sub,
       }
     )
-
-    // Redirect to protected area
-    throw redirect({ to: "/notes" })
   })
 
 export const signupFn = createServerFn({ method: "POST" })
@@ -81,8 +78,6 @@ export const signupFn = createServerFn({ method: "POST" })
       token,
       userId: decoded.sub,
     })
-
-    throw redirect({ to: "/" })
   })
 
 export const logoutFn = createServerFn({ method: "POST" }).handler(async () => {

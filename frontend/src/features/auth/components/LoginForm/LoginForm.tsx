@@ -1,6 +1,5 @@
 import { useForm } from "@tanstack/react-form"
-import { Link, isRedirect } from "@tanstack/react-router"
-import { toast } from "sonner"
+import { Link } from "@tanstack/react-router"
 
 import { useLoginMutation } from "@/features/auth/mutations/login-mutation"
 
@@ -18,18 +17,7 @@ export function LoginForm() {
     validators: {
       onSubmit: loginSchema,
     },
-    onSubmit: async ({ value }) => {
-      try {
-        await loginMutation.mutateAsync(value)
-        toast.success("Signed in successfully")
-        // Redirect is handled in server function via redirect()
-      } catch (err) {
-        if (isRedirect(err)) {
-          throw err
-        }
-        toast.error((err as Error).message)
-      }
-    },
+    onSubmit: async ({ value }) => await loginMutation.mutateAsync(value),
   })
 
   return (

@@ -1,15 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useServerFn } from "@tanstack/react-start"
-import { isRedirect } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
+import { toast } from "sonner"
 
 import { loginFn } from "@/api/auth"
-import { authKeys } from "@/lib/query-keys/auth"
+
+import { userQueryOptions } from "../queries/user-query"
 
 import type { LoginSchema } from "../components/LoginForm/schema"
 
 export function useLoginMutation() {
   const loginMutationFn = useServerFn(loginFn)
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   return useMutation({
     mutationFn: async (data: LoginSchema) => {
@@ -19,13 +22,13 @@ export function useLoginMutation() {
       return res
     },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: authKeys.me.queryKey })
+      toast.success("Account created successfully")
+      await queryClient.ensureQueryData(userQueryOptions)
+
+      navigate({ to: "/notes" })
     },
     onError: async (err) => {
-      if (isRedirect(err)) {
-        await queryClient.invalidateQueries({ queryKey: authKeys.me.queryKey })
-        throw err
-      }
+      toast.error((err as Error).message)
     },
   })
 }

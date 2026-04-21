@@ -1,6 +1,5 @@
 import { useForm } from "@tanstack/react-form"
-import { Link, isRedirect } from "@tanstack/react-router"
-import { toast } from "sonner"
+import { Link } from "@tanstack/react-router"
 
 import { useSignupMutation } from "@/features/auth/mutations/signup-mutation"
 
@@ -18,17 +17,7 @@ export function SignupForm() {
     validators: {
       onSubmit: signupSchema,
     },
-    onSubmit: async ({ value }) => {
-      try {
-        await signupMutation.mutateAsync(value)
-        toast.success("Account created successfully")
-      } catch (err) {
-        if (isRedirect(err)) {
-          throw err
-        }
-        toast.error((err as Error).message)
-      }
-    },
+    onSubmit: async ({ value }) => await signupMutation.mutateAsync(value),
   })
 
   return (
